@@ -1,14 +1,25 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
 import { createTicket } from "@/actions/ticket.actions";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 const NewTicketForm = () => {
+  const router = useRouter();
+
   //! handle form submission, what happens when the form is submitted, what we get back from the server
   const [state, formAction] = useActionState(createTicket, {
     success: false,
     message: "",
   });
+
+  useEffect(() => {
+    if (state.success) {
+      toast.success("Ticket submitted successfully!");
+      router.push("/tickets");
+    }
+  }, [state.success, router]);
 
   return (
     <div className="w-full max-w-md bg-white shadow-md rounded-lg p-8 border border-gray-200">
