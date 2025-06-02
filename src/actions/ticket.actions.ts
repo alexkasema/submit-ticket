@@ -3,6 +3,7 @@
 import { prisma } from "@/db/prisma";
 import { revalidatePath } from "next/cache";
 import { logEvent } from "@/utils/sentry"; // Adjust the import based on your prisma setup
+import { getCurrentUser } from "@/lib/current-user";
 import * as Sentry from "@sentry/nextjs";
 
 export const createTicket = async (
@@ -10,17 +11,19 @@ export const createTicket = async (
   data: FormData
 ): Promise<{ success: boolean; message: string }> => {
   try {
+    const user = await getCurrentUser();
+
+    if (!user) {
+      logEvent("Unauthorized ticket creation attempt", "ticket", {}, "warning");
+
+      return {
+        success: false,
+        message: "You must be logged in to create a ticket",
+      };
+    }
     const subject = data.get("subject") as string;
     const description = data.get("description") as string;
     const priority = data.get("priority") as string;
-
-    // Here you would typically send this data to your backend or database
-    // For demonstration, we will just log it
-    console.log("New Ticket Created:", {
-      subject,
-      description,
-      priority,
-    });
 
     if (!subject || !description || !priority) {
       logEvent(
@@ -38,6 +41,9 @@ export const createTicket = async (
         subject,
         description,
         priority,
+        user: {
+          connect: { id: user.id },
+        },
       },
     });
 
@@ -71,7 +77,14 @@ export const createTicket = async (
 
 export const getTickets = async () => {
   try {
+    const user = await getCurrentUser();
+
+    if (!user) {
+      logEvent("Unauthorized access to ticket list", "ticket", {}, "warning");
+      return [];
+    }
     const tickets = await prisma.ticket.findMany({
+      where: { userId: user.id },
       orderBy: { createdAt: "desc" },
     });
 

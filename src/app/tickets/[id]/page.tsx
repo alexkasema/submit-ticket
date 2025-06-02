@@ -1,8 +1,9 @@
 import { getTicketById } from "@/actions/ticket.actions";
+import { getCurrentUser } from "@/lib/current-user";
 import { logEvent } from "@/utils/sentry";
 import { getPriorityClass } from "@/utils/ui";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import React from "react";
 
 interface TicketDetailsPageProps {
@@ -10,6 +11,12 @@ interface TicketDetailsPageProps {
 }
 
 const TicketDetailsPage = async (props: TicketDetailsPageProps) => {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
   const { id } = await props.params;
   const ticket = await getTicketById(id);
 
