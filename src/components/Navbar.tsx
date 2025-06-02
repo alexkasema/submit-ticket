@@ -1,8 +1,9 @@
+import { getCurrentUser } from "@/lib/current-user";
 import Link from "next/link";
 import React from "react";
 
 const Navbar = async () => {
-  const user = 0;
+  const user = await getCurrentUser();
   return (
     <nav className="bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center">
       <div>
