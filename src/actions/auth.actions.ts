@@ -85,3 +85,21 @@ export const registerUser = async (
     };
   }
 };
+
+//! Log user out and remove auth cookie
+export const logoutUser = async (): Promise<{
+  success: boolean;
+  message: string;
+}> => {
+  try {
+    await removeAuthCookie();
+
+    logEvent("User logged out successfully", "auth", {}, "info");
+
+    return { success: true, message: "Logout Successful" };
+  } catch (error) {
+    logEvent("Unexpected error during logout", "auth", {}, "error", error);
+
+    return { success: false, message: "Logout failed. Please try again" };
+  }
+};
